@@ -13,7 +13,10 @@ pids
 logs
 results
 
+*.sublime*
+
 npm-debug.log
 
 .DS_Store
 
+node_modules

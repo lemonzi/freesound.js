@@ -1,0 +1,16 @@
+{
+    "name": "freesound",
+    "version": "0.0.1",
+    "description": "Node.js module to connect to the Freesound API",
+    "main": "freesound.js",
+    "author": "Quim Llimona",
+    "keywords": ["freesound", "audio", "api"],
+    "repository" : {
+        "type": "git",
+        "url": "https://github.com/lemonzi/node-freesound.git"
+    },
+    "dependencies": {
+        "request": "*"
+    },
+    "engines": { "node": "*" }
+}
