@@ -23,7 +23,8 @@ function _make_uri(uri,args) {
 }
 
 function _make_request(uri,success,error,params,wrapper){
-    if (!params.apiKey) params.api_key = module.exports.apiKey;
+    params = params || {};
+    if (!params.api_key) params.api_key = module.exports.apiKey;
     request(uri, {
         json: true,
         qs: params
@@ -38,20 +39,21 @@ function _make_request(uri,success,error,params,wrapper){
 }
 
 function _make_sound_object(snd){
-    snd.getAnalysis = function(showAll, filter, success, error){
-        var params = {all: showAll?1:0};
-        var base_uri = filter? _URI_SOUND_ANALYSIS_FILTER:_URI_SOUND_ANALYSIS;
-        _make_request(_make_uri(base_uri,[snd.id,filter?filter:""]),success,error);
+    snd.getAnalysis = function(options, success, error){
+        if (!options) options = {};
+        var params = {all: options.showAll?1:0};
+        var base_uri = options.filter? _URI_SOUND_ANALYSIS_FILTER:_URI_SOUND_ANALYSIS;
+        _make_request(_make_uri(base_uri,[snd.id,options.filter?options.filter:""]),success,error);
     };
     snd.getSimilarSounds = function(success, error){
-        _make_request(_make_uri(_URI_SIMILAR_SOUNDS,[snd.id]),success,error);
+        _make_request(_make_uri(_URI_SIMILAR_SOUNDS,[snd.id]),success,error,_make_sound_collection_object);
     };
     return snd;
 }
 
 function _make_sound_collection_object(col){
     var get_next_or_prev = function(which,success,error) {
-        _make_request(which,success,error,null);
+        _make_request(which,success,error,_make_sound_collection_object);
     };
     col.nextPage = function(success,error) {
         get_next_or_prev(col.next,success,error);
@@ -59,12 +61,27 @@ function _make_sound_collection_object(col){
     col.previousPage = function(success,error) {
         get_next_or_prev(col.previous,success,error);
     };
+    col.sounds.forEach(_make_sound_object);
+    return col;
+}
+
+function _make_pack_collection_object(col){
+    var get_next_or_prev = function(which,success,error) {
+        _make_request(which,success,error,_make_pack_collection_object);
+    };
+    col.nextPage = function(success,error) {
+        get_next_or_prev(col.next,success,error);
+    };
+    col.previousPage = function(success,error) {
+        get_next_or_prev(col.previous,success,error);
+    };
+    col.packs.forEach(_make_pack_object);
     return col;
 }
 
 function _make_user_object(user){
     user.getSounds = function(success, error){
-        _make_request(_make_uri(_URI_USER_SOUNDS,[user.username]),success,error);
+        _make_request(_make_uri(_URI_USER_SOUNDS,[user.username]),success,error,_make_sound_collection_object);
     };
     user.getPacks = function(success, error){
         _make_request(_make_uri(_URI_USER_PACKS,[user.username]),success,error);
@@ -80,7 +97,7 @@ function _make_user_object(user){
 
 function _make_pack_object(pack){ // receives json object already "parsed"
     pack.getSounds = function(success, error){
-        _make_request(_make_uri(_URI_PACK_SOUNDS,[pack.id]),success,error);
+        _make_request(_make_uri(_URI_PACK_SOUNDS,[pack.id]),success,error,_make_sound_collection_object);
     };
     return pack;
 }
