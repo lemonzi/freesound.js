@@ -1,3 +1,5 @@
+var request = require('request');
+
 var _URI_SOUND = '/sounds/<sound_id>/',
     _URI_SOUND_ANALYSIS = '/sounds/<sound_id>/analysis/',
     _URI_SOUND_ANALYSIS_FILTER ='/sounds/<sound_id>/analysis/<filter>',
@@ -17,34 +19,23 @@ function _make_uri(uri,args) {
     for (var a in args) {
         uri = uri.replace(/<[\w_]+>/, args[a]);
     }
-    return this.BASE_URI+uri;
+    return exports.BASE_URI+uri;
 }
 
 function _make_request(uri,success,error,params,wrapper){
-    var fs = this;
-
-    if (uri.indexOf('?') == -1) {
-        uri = uri+"?";
-    }
-    uri = uri+"&api_key="+this.apiKey;
-    for (var p in params) {
-        uri = uri+"&"+p+"="+params[p];
-    }
-    var xhr;
-    try {xhr = new XMLHttpRequest()}
-    catch (e) {xhr = new ActiveXObject('Microsoft.XMLHTTP')};
-    xhr.onreadystatechange = function(){
-        if (xhr.readyState == 4 && xhr.status == 200){
-            var data = eval("(" + xhr.responseText + ")");
+    if (!params.apiKey) params.apiKey = exports.apiKey;
+    request(uri, {
+        json: true,
+        qs: params
+    }, function(e, r, data) {
+        if (!e) {
+            data = JSON.parse(data);
             success(wrapper?wrapper(data):data);
+        } else {
+            error(e);
         }
-        else if (xhr.readyState == 4 && xhr.status != 200){
-            error();
-        }
-    };
+    });
     console.log(uri);
-    xhr.open('GET', uri);
-    xhr.send(null);
 }
 
 function _make_sound_object(snd){ // receives json object already "parsed"
@@ -88,7 +79,7 @@ function _make_user_object(user){ // receives json object already "parsed"
     return user;
 }
 
-function _make_pack_object(pack){ // receives json object already "parsed" (via eval)
+function _make_pack_object(pack){ // receives json object already "parsed"
     pack.get_sounds = function(success, error){
         freesound._make_request(freesound._make_uri(freesound._URI_PACK_SOUNDS,[pack.id]),success,error);
     };
@@ -100,19 +91,19 @@ exports.freesound = {
     apiKey : '',
 
     get_from_ref: function(ref, success,error){
-        this._make_request(ref,success,error,{});
+        _make_request(ref,success,error,{});
     },
     get_sound : function(soundId, success,error){
-        this._make_request(this._make_uri(this._URI_SOUND,[soundId]),success,error,{},this._make_sound_object);
+        _make_request(_make_uri(_URI_SOUND,[soundId]),success,error,{},_make_sound_object);
     },
     get_user : function(username, success,error){
-        this._make_request(this._make_uri(this._URI_USER,[username]),success,error,{},this._make_user_object);
+        _make_request(_make_uri(_URI_USER,[username]),success,error,{},_make_user_object);
     },
     get_pack : function(packId, success,error){
-        this._make_request(this._make_uri(this._URI_PACK,[packId]),success,error,{},this._make_pack_object);
+        _make_request(_make_uri(_URI_PACK,[packId]),success,error,{},_make_pack_object);
     },
     quick_search : function(query,success,error){
-        this.search(query,0,null,null,success,error);
+        search(query,0,null,null,success,error);
     },
     search: function(query, page, filter, sort, num_results, fields, sounds_per_page, success, error){
         var params = {q:(query ? query : " ")};
@@ -122,7 +113,7 @@ exports.freesound = {
         if(num_results)params.num_results = num_results;
         if(sounds_per_page)params.sounds_per_page = sounds_per_page;
         if(fields)params.fields = fields;
-        this._make_request(this._make_uri(this._URI_SEARCH), success,error,params, this._make_sound_collection_object);
+        _make_request(_make_uri(_URI_SEARCH), success,error,params, _make_sound_collection_object);
     },
     content_based_search: function(target, filter, max_results, fields, page, sounds_per_page, success, error){
         var params = {};
@@ -132,7 +123,7 @@ exports.freesound = {
         if(max_results)params.max_results = max_results;
         if(sounds_per_page)params.sounds_per_page = sounds_per_page;
         if(fields)params.fields = fields;
-        this._make_request(this._make_uri(this._URI_CONTENT_SEARCH), success,error,params, this._make_sound_collection_object);
+        _make_request(_make_uri(_URI_CONTENT_SEARCH), success,error,params, _make_sound_collection_object);
     },
     geotag: function(min_lat, max_lat, min_lon, max_lon, page, fields, sounds_per_page, success, error){
         var params = {};
@@ -143,6 +134,6 @@ exports.freesound = {
         if(page)params.p = page;
         if(sounds_per_page)params.sounds_per_page = sounds_per_page;
         if(fields)params.fields = fields;
-        this._make_request(this._make_uri(this._URI_GEOTAG), success,error,params, this._make_sound_collection_object);
+        _make_request(_make_uri(_URI_GEOTAG), success,error,params, _make_sound_collection_object);
     }
 };
