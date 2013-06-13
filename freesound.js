@@ -38,50 +38,50 @@ function _make_request(uri,success,error,params,wrapper){
     console.log(uri);
 }
 
-function _make_sound_object(snd){ // receives json object already "parsed"
-    snd.get_analysis = function(showAll, filter, success, error){
+function _make_sound_object(snd){
+    snd.getAnalysis = function(showAll, filter, success, error){
         var params = {all: showAll?1:0};
-        var base_uri = filter? freesound._URI_SOUND_ANALYSIS_FILTER:freesound._URI_SOUND_ANALYSIS;
-        freesound._make_request(freesound._make_uri(base_uri,[snd.id,filter?filter:""]),success,error);
+        var base_uri = filter? _URI_SOUND_ANALYSIS_FILTER:_URI_SOUND_ANALYSIS;
+        _make_request(_make_uri(base_uri,[snd.id,filter?filter:""]),success,error);
     };
-    snd.get_similar_sounds = function(success, error){
-        freesound._make_request(freesound._make_uri(freesound._URI_SIMILAR_SOUNDS,[snd.id]),success,error);
+    snd.getSimilarSounds = function(success, error){
+        _make_request(_make_uri(_URI_SIMILAR_SOUNDS,[snd.id]),success,error);
     };
     return snd;
 }
 
 function _make_sound_collection_object(col){
     var get_next_or_prev = function(which,success,error) {
-        freesound._make_request(which,success,error,null);
+        _make_request(which,success,error,null);
     };
-    col.next_page = function(success,error) {
-        get_next_or_prev(this.next,success,error);
+    col.nextPage = function(success,error) {
+        get_next_or_prev(col.next,success,error);
     };
-    col.previous_page = function(success,error) {
-        get_next_or_prev(this.previous,success,error);
+    col.previousPage = function(success,error) {
+        get_next_or_prev(col.previous,success,error);
     };
     return col;
 }
 
-function _make_user_object(user){ // receives json object already "parsed"
-    user.get_sounds = function(success, error){
-        freesound._make_request(freesound._make_uri(freesound._URI_USER_SOUNDS,[user.username]),success,error);
+function _make_user_object(user){
+    user.getSounds = function(success, error){
+        _make_request(_make_uri(_URI_USER_SOUNDS,[user.username]),success,error);
     };
-    user.get_packs = function(success, error){
-        freesound._make_request(freesound._make_uri(freesound._URI_USER_PACKS,[user.username]),success,error);
+    user.getPacks = function(success, error){
+        _make_request(_make_uri(_URI_USER_PACKS,[user.username]),success,error);
     };
-    user.get_bookmark_categories = function(success, error){
-        freesound._make_request(freesound._make_uri(freesound._URI_USER_BOOKMARKS,[user.username]),success,error);
+    user.getBookmarkCategories = function(success, error){
+        _make_request(_make_uri(_URI_USER_BOOKMARKS,[user.username]),success,error);
     };
-    user.get_bookmark_category_sounds = function(ref, success, error){
-        freesound._make_request(ref,success,error);
+    user.getBookmarkCategorySounds = function(ref, success, error){
+        _make_request(ref,success,error);
     };
     return user;
 }
 
 function _make_pack_object(pack){ // receives json object already "parsed"
-    pack.get_sounds = function(success, error){
-        freesound._make_request(freesound._make_uri(freesound._URI_PACK_SOUNDS,[pack.id]),success,error);
+    pack.getSounds = function(success, error){
+        _make_request(_make_uri(_URI_PACK_SOUNDS,[pack.id]),success,error);
     };
     return pack;
 }
@@ -90,50 +90,47 @@ exports.freesound = {
     BASE_URI : "http://www.freesound.org/api",
     apiKey : '',
 
-    get_from_ref: function(ref, success,error){
+    getFromRef: function(ref, success,error){
         _make_request(ref,success,error,{});
     },
-    get_sound : function(soundId, success,error){
+    getSound : function(soundId, success,error){
         _make_request(_make_uri(_URI_SOUND,[soundId]),success,error,{},_make_sound_object);
     },
-    get_user : function(username, success,error){
+    getUser : function(username, success,error){
         _make_request(_make_uri(_URI_USER,[username]),success,error,{},_make_user_object);
     },
-    get_pack : function(packId, success,error){
+    getPack : function(packId, success,error){
         _make_request(_make_uri(_URI_PACK,[packId]),success,error,{},_make_pack_object);
     },
-    quick_search : function(query,success,error){
-        search(query,0,null,null,success,error);
-    },
-    search: function(query, page, filter, sort, num_results, fields, sounds_per_page, success, error){
+    search: function(query, options, success, error){
         var params = {q:(query ? query : " ")};
-        if(page)params.p = page;
-        if(filter)params.f = filter;
-        if(sort)params.s = sort;
-        if(num_results)params.num_results = num_results;
-        if(sounds_per_page)params.sounds_per_page = sounds_per_page;
-        if(fields)params.fields = fields;
+        if(options.page)params.p = options.page;
+        if(options.filter)params.f = options.filter;
+        if(options.sort)params.s = options.sort;
+        if(options.num_results)params.num_results = options.num_results;
+        if(options.sounds_per_page)params.sounds_per_page = options.sounds_per_page;
+        if(options.fields)params.fields = options.fields;
         _make_request(_make_uri(_URI_SEARCH), success,error,params, _make_sound_collection_object);
     },
-    content_based_search: function(target, filter, max_results, fields, page, sounds_per_page, success, error){
+    contentBasedSearch: function(target, options, success, error){
         var params = {};
-        if(page)params.p = page;
-        if(filter)params.f = filter;
-        if(target)params.t = target;
-        if(max_results)params.max_results = max_results;
-        if(sounds_per_page)params.sounds_per_page = sounds_per_page;
-        if(fields)params.fields = fields;
-        _make_request(_make_uri(_URI_CONTENT_SEARCH), success,error,params, _make_sound_collection_object);
+        if(options.page)params.p = options.page;
+        if(options.filter)params.f = options.filter;
+        if(options.target)params.t = options.target;
+        if(options.max_results)params.max_results = options.max_results;
+        if(options.sounds_per_page)params.sounds_per_page = options.sounds_per_page;
+        if(options.fields)params.fields = options.fields;
+        _make_request(_make_uri(_URI_CONTENT_SEARCH),success,error,params,_make_sound_collection_object);
     },
-    geotag: function(min_lat, max_lat, min_lon, max_lon, page, fields, sounds_per_page, success, error){
+    geotag: function(min_lat, max_lat, min_lon, max_lon, options, success, error){
         var params = {};
         if(min_lat)params.min_lat = min_lat;
         if(max_lat)params.max_lat = max_lat;
         if(min_lon)params.min_lon = min_lon;
         if(max_lon)params.max_lon = max_lon;
-        if(page)params.p = page;
-        if(sounds_per_page)params.sounds_per_page = sounds_per_page;
-        if(fields)params.fields = fields;
+        if(options.page)params.p = options.page;
+        if(options.sounds_per_page)params.sounds_per_page = options.sounds_per_page;
+        if(options.fields)params.fields = options.fields;
         _make_request(_make_uri(_URI_GEOTAG), success,error,params, _make_sound_collection_object);
     }
 };
