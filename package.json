@@ -1,6 +1,6 @@
 {
     "name": "freesound",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Node.js module to connect to the Freesound API",
     "main": "freesound.js",
     "author": "Quim Llimona",

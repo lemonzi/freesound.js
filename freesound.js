@@ -19,20 +19,19 @@ function _make_uri(uri,args) {
     for (var a in args) {
         uri = uri.replace(/<[\w_]+>/, args[a]);
     }
-    return exports.BASE_URI+uri;
+    return module.exports.BASE_URI + uri;
 }
 
 function _make_request(uri,success,error,params,wrapper){
-    if (!params.apiKey) params.apiKey = exports.apiKey;
+    if (!params.apiKey) params.api_key = module.exports.apiKey;
     request(uri, {
         json: true,
         qs: params
     }, function(e, r, data) {
         if (!e) {
-            data = JSON.parse(data);
-            success(wrapper?wrapper(data):data);
+            if(success) success(wrapper?wrapper(data):data);
         } else {
-            error(e);
+            if(error) error(e);
         }
     });
     console.log(uri);
@@ -86,7 +85,7 @@ function _make_pack_object(pack){ // receives json object already "parsed"
     return pack;
 }
 
-exports.freesound = {
+module.exports = {
     BASE_URI : "http://www.freesound.org/api",
     apiKey : '',
 
@@ -104,22 +103,26 @@ exports.freesound = {
     },
     search: function(query, options, success, error){
         var params = {q:(query ? query : " ")};
-        if(options.page)params.p = options.page;
-        if(options.filter)params.f = options.filter;
-        if(options.sort)params.s = options.sort;
-        if(options.num_results)params.num_results = options.num_results;
-        if(options.sounds_per_page)params.sounds_per_page = options.sounds_per_page;
-        if(options.fields)params.fields = options.fields;
+        if (options) {
+            if(options.page)params.p = options.page;
+            if(options.filter)params.f = options.filter;
+            if(options.sort)params.s = options.sort;
+            if(options.num_results)params.num_results = options.num_results;
+            if(options.sounds_per_page)params.sounds_per_page = options.sounds_per_page;
+            if(options.fields)params.fields = options.fields;
+        }
         _make_request(_make_uri(_URI_SEARCH), success,error,params, _make_sound_collection_object);
     },
     contentBasedSearch: function(target, options, success, error){
         var params = {};
-        if(options.page)params.p = options.page;
-        if(options.filter)params.f = options.filter;
-        if(options.target)params.t = options.target;
-        if(options.max_results)params.max_results = options.max_results;
-        if(options.sounds_per_page)params.sounds_per_page = options.sounds_per_page;
-        if(options.fields)params.fields = options.fields;
+        if (options) {
+            if(options.page)params.p = options.page;
+            if(options.filter)params.f = options.filter;
+            if(options.target)params.t = options.target;
+            if(options.max_results)params.max_results = options.max_results;
+            if(options.sounds_per_page)params.sounds_per_page = options.sounds_per_page;
+            if(options.fields)params.fields = options.fields;
+        }
         _make_request(_make_uri(_URI_CONTENT_SEARCH),success,error,params,_make_sound_collection_object);
     },
     geotag: function(min_lat, max_lat, min_lon, max_lon, options, success, error){
@@ -128,9 +131,11 @@ exports.freesound = {
         if(max_lat)params.max_lat = max_lat;
         if(min_lon)params.min_lon = min_lon;
         if(max_lon)params.max_lon = max_lon;
-        if(options.page)params.p = options.page;
-        if(options.sounds_per_page)params.sounds_per_page = options.sounds_per_page;
-        if(options.fields)params.fields = options.fields;
+        if (options) {
+            if(options.page)params.p = options.page;
+            if(options.sounds_per_page)params.sounds_per_page = options.sounds_per_page;
+            if(options.fields)params.fields = options.fields;
+        }
         _make_request(_make_uri(_URI_GEOTAG), success,error,params, _make_sound_collection_object);
     }
 };
