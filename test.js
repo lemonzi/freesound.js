@@ -1,6 +1,7 @@
 var freesound = require('./freesound');
 
-freesound.apiKey = '8e541132eb0e40bd829806b7503f105e';
+// freesound.apiKey = require('./key');
+freesound.apiKey = 'MY_API_KEY';
 
 freesound.search('boom',{},function(data){
     data.sounds[0].getAnalysis({},function(d) {
